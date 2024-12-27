@@ -1,0 +1,238 @@
+---
+title: "Flight_Delay_Analysis"
+author: "Minh Phan"
+format: html
+editor: visual
+---
+
+## Objective: Predict whether a flight will be delayed (arr_delay \> 0) based on features such as carrier, origin, destination, and scheduled departure time
+
+### Data preparation
+
+clear working directory
+
+```{r setup, include=FALSE}
+rm(list = ls())
+knitr::opts_knit$set(root.dir = '~/Downloads')
+```
+
+Import dataset
+
+```{r}
+flight<-read.csv("flights.csv")
+```
+
+Checking/handling missing and non relevant values
+
+```{r}
+sum(is.na(flight))
+
+#Filtering columns that include missing values
+
+names(flight)[colSums(is.na(flight)) > 0]
+
+# Removing non relevant columns for the analysis
+
+remove_Column <- c("tailnum","flight","month","day","year","arr_time","dep_time","air_time")
+flight <- flight[ , !(names(flight) %in% remove_Column)]
+```
+
+Replacing missing values with mean
+
+```{r}
+flight$dep_delay <- ifelse(is.na(flight$dep_delay), mean(flight$dep_delay, na.rm = TRUE), flight$dep_delay)
+flight$arr_delay <- ifelse(is.na(flight$arr_delay), mean(flight$arr_delay, na.rm = TRUE), flight$arr_delay)
+flight$hour <- ifelse(is.na(flight$hour), mean(flight$hour, na.rm = TRUE), flight$hour)
+flight$minute <- ifelse(is.na(flight$minute), mean(flight$minute, na.rm = TRUE), flight$minute)
+```
+
+Add our binary target variable (delays-status): if arr_delay \> 0, delay status is 1(True) else, delay status is 0 (False)
+
+```{r}
+flight$delay_status <- ifelse(flight$arr_delay > 0, 1, 0)
+# Check the first few rows to verify
+head(flight$delay_status)
+```
+
+Training/Test case split
+
+```{r}
+
+flight$delay_status <-as.integer(flight$delay_status)
+flight$carrier<-as.factor(flight$carrier)
+flight$origin <-as.factor(flight$origin)
+flight <- flight[!flight$dest %in% c("BNA", "IAD"), ]
+flight$dest <-as.factor(flight$dest)
+
+
+library(forcats)
+flight$dest<- fct_na_value_to_level(flight$dest,"Missing")
+
+set.seed(1234)
+trainingSize = round(nrow(flight)*0.7)
+trainingCases = sample(nrow(flight), trainingSize)
+training = flight[trainingCases,]
+test = flight[-trainingCases,]
+```
+
+### EDA
+
+```         
+First, let's take a look at the distrbution of the delay based on the arr_delay column
+```
+
+```{r}
+library(ggplot2)
+# Histogram of arrival delays
+ggplot(flight, aes(x = arr_delay)) +
+  geom_histogram(binwidth = 10, fill = "blue", color = "black", alpha = 0.7) + scale_x_continuous(limits = c(-20,100), breaks = seq(-20, 100, 10)) + labs(title = "Distribution of Arrival Delays", x = "Arrival Delay (minutes)", y = "Frequency") + theme_minimal()
+```
+
+Analyze the relationships between delay_status and Carrier
+
+```{r}
+# Calculate mean delays by carrier
+library(dplyr)             
+avg_delays_carrier <- flight %>%
+  group_by(carrier) %>%
+  summarise(mean_arr_delay = mean(arr_delay, na.rm = TRUE))
+# View results
+print(avg_delays_carrier)
+```
+
+```{r}
+# Plot average delays by carrier
+ggplot(avg_delays_carrier, aes(x = reorder(carrier, mean_arr_delay), y = mean_arr_delay)) +
+  geom_col(fill = "steelblue") +
+  scale_y_continuous(limits = c(-10, 5), breaks = seq(-10, 5, 5)) +
+  labs(title = "Average Arrival Delays by Carrier", 
+       x = "Carrier", 
+       y = "Average Arrival Delay (minutes)") +
+  theme_minimal() +
+  coord_flip()
+```
+
+## Insight: We can see that Alaska Airline has the lowest average arrival delay while United Airline is the carrier that occurs the highest average arrival delay in minutes (about 3 minutes)
+
+### Machine Learning Models Implementation
+
+Logistic Regression
+
+Categorical: carrier, origin, dest. Numerical: distance, hour, minute, dep_delay
+
+```{r}
+logistic <- glm(delay_status ~ origin + dest + hour + minute + carrier + dep_delay, data=training, family=binomial)
+model1 <- step(logistic, direction = "both")
+```
+
+```{r}
+summary(model1)
+```
+
+Calculating the error rate for the logistic regression
+
+```{r}
+pred_logistic <- predict(model1, test, type="response")  #Note that type="response" gives us probabilities
+pred_logistic <- (pred_logistic >= 0.5)
+error_logistic <- sum(pred_logistic != test$delay_status)/nrow(test)
+error_logistic
+```
+
+```{r}
+sensitivity <- sum(pred_logistic == TRUE & test$delay_status == TRUE)/sum(test$delay_status == TRUE)
+sensitivity
+```
+
+## The sensitivity is 54 %
+
+Confusion Matrix
+```{r}
+table(pred_logistic, test$delay_status)
+```
+
+Error rate benchmark
+
+```{r}
+source("BabsonAnalytics.R")
+error_bench <- benchmarkErrorRate(training$delay_status, test$delay_status)
+error_bench
+```
+
+## Insight: Based on results from the model error rate and benchmark error rate, we can conclude that this is a useful model since our model error rate (21%) is lower than the benchmark error rate (37%)
+
+```{r}
+library(gbm)
+
+set.seed(23) # we can set the seed to get optimal best_size for trees later, though it can vary greatly due to cross-validation without seed.
+
+# We start with large amount of trees, but we can use cross-validation later to assess best number of trees
+boost = gbm(delay_status ~  origin + dest + hour + minute + carrier + dep_delay ,data= training, n.trees=500, cv.folds=4)
+```
+
+```{r}
+# Figure out what the best # of trees should be
+best_size <- gbm.perf(boost,method="cv")
+gbm.perf(boost)
+```
+
+```{r}
+boost = gbm(delay_status ~ origin + dest + hour + minute + carrier + dep_delay , data=training,n.trees=best_size, cv.folds=4)
+```
+
+```{r}
+# Make predictions
+pred_boost  = predict(boost, test, n.trees=best_size, type="response")
+pred_boost = (pred_boost > 0.5)
+#calculate errors
+error_boost = sum(pred_boost != test$delay_status)/nrow(test)
+```
+
+
+#Conclusion: The Boost Model provide the error rate of 21%
+
+```{r}
+# We need the predictions from multiple models that we have already run
+
+# First, get the predictions for all of data frame observations, not just test.
+pred_boost_full <- predict(boost, flight, n.trees=best_size, type="response")
+pred_boost_full <- (pred_boost_full >= 0.5)
+
+
+pred_logistic_full <- predict(logistic, flight, type="response")
+pred_logistic_full <- (pred_logistic_full >= 0.5)
+
+#Column bind the two data sets with the different predictions
+# Because most of the columns are the same between pred_boost_full and pred_rf_full
+df_stacked = cbind(flight,pred_boost_full, pred_logistic_full)
+
+df_stacked$delay_status = as.logical(df_stacked$delay_status)
+
+# Set the training and test data; now these sets have the predictions!
+train_stacked = df_stacked[trainingCases, ]
+test_stacked = df_stacked[-trainingCases, ]
+
+# Run the stacked algorithm, where the manager/meta model is a logistic model. 
+stacked = glm(delay_status ~ origin + dest + hour + minute + carrier + dep_delay, data = train_stacked, family=binomial)
+```
+
+```{r}
+# Make the predictions
+pred_stacked = predict(stacked, test_stacked, type="response")
+pred_stacked = (pred_stacked > 0.5)
+
+# Calculate error rate
+error_stacked = sum(pred_stacked != test$delay_status)/nrow(test)
+```
+
+Adding numeric prob of delay to the stacked dataset
+```{r}
+df_stacked$delay_status = as.integer(df_stacked$delay_status)
+df_stacked$prob_yes <- round(predict(stacked, df_stacked, type="response"),3)
+df_stacked$prob_no <- round(1 -  df_stacked$prob_yes,3)
+```
+
+Change the target variable to yes/no
+```{r}
+df_stacked$delay_status <- ifelse(df_stacked$delay_status == 1, "Yes", "No")
+```
+#Conclusion: The Stacked Model provide the error rate of 21%

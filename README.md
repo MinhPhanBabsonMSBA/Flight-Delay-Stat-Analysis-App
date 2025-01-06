@@ -2,7 +2,7 @@
 
 ## **A. Introduction**
 
-Welcome to the **Flight Delay Analysis App**! This project was inspired by a personal experience during the New Year’s holiday when a flight delay at JFK Airport sparked curiosity about the causes and patterns of flight delays. Leveraging machine learning and interactive data visualization, this app helps users explore real-world flight delay data and gain insights into factors contributing to delays.
+Welcome to the **Flight Delay Analysis App**! This project was inspired by a personal experience during the New Year’s holiday when a flight delay at JFK Airport sparked curiosity about the causes and patterns of flight delay ([LinkedIn Post](https://www.linkedin.com/posts/minh-phan-0409_it-is-the-new-years-holiday-one-of-the-activity-7280805963832410112-8Cs3?utm_source=share&utm_medium=member_desktop)). Leveraging machine learning and interactive data visualization, this app helps users explore real-world flight delay data and gain insights into factors contributing to delays. 
  
  **Explore the Project**
 - **R Shiny App**: [Flight Delay Analysis App](http://jj1tt9minh0phan.shinyapps.io/FlightDelayApp)

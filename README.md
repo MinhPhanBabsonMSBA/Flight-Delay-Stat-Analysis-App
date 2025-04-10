@@ -46,21 +46,27 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
 
 ## 🧩 E. Key Features
 
+
+
 ### 🖥️ R Shiny Dashboard
 
 - **Interactive Inputs**:
   - Select carrier, origin, and destination.
   - Simulate departure delays and auto-calculate distance.
+
   
 - **Visual Analytics**:
-  - Delay distribution by carrier
+  - Top 10 routes have the highest average departure delay 
+    ![](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App/blob/main/flight%20delay%203.png)
   - Top 10 destinations by average delay
+   ![](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App/blob/main/flight%20delay%202.png)
   - Route-level delay maps
+    ![](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App/blob/main/flight%20delay%204.png)
   - Carrier performance bar plots
-
+  ![](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App/blob/main/flight%20delay%201.png)
 - **Predictive Analytics**:
   - Real-time probability prediction of a flight being delayed.
-
+   ![](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App/blob/main/flight%20delay%205.png)
 ---
 
 ## 🗺️ F. Visual Highlights

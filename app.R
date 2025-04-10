@@ -5,6 +5,9 @@ library(dplyr)
 library(leaflet)
 library(shinythemes)
 library(shinyBS)
+library(httr)
+library(jsonlite)
+
 
 # Define UI
 ui <- fluidPage(
@@ -38,7 +41,12 @@ ui <- fluidPage(
         tabPanel("Route Map", leafletOutput("route_map", height = "700px")),
         tabPanel("Will my flight be delayed ?",
                  h4("Predicted Probability of Delay"),
-                 tableOutput("prediction")
+                 tableOutput("prediction")),
+        tabPanel("AI Price Assistant",
+                 textInput("user_query", "Ask about flight price:", placeholder = "e.g. How much is JFK to LAX next month?"),
+                 actionButton("ask_ai", "Ask"),
+                 br(),
+                 verbatimTextOutput("ai_response")
         )
       )
     )
@@ -112,6 +120,44 @@ server <- function(input, output, session) {
       pull(dest)
     updateSelectInput(session, "dest", choices = valid_dests)
   })
+  
+  
+  
+  
+  observeEvent(input$ask_ai, {
+    req(input$user_query)
+    
+    res <- httr::POST(
+      url = "https://api.groq.com/openai/v1/chat/completions",
+      httr::add_headers(
+        Authorization = paste("Bearer", Sys.getenv('GROQ_API_KEY')),
+        "Content-Type" = "application/json"
+      ),
+      body = jsonlite::toJSON(list(
+        model = "llama3-70b-8192",  # or whichever Groq-supported model you want
+        messages = list(
+          list(role = "system", content = "You are a helpful travel assistant who provides estimated flight ticket prices based on route and travel date."),
+          list(role = "user", content = input$user_query)
+        ),
+        temperature = 0.7
+      ), auto_unbox = TRUE)
+    )
+    
+    content <- httr::content(res, as = "parsed")
+    
+    output$ai_response <- renderText({
+      if (!is.null(content$choices)) {
+        content$choices[[1]]$message$content
+      } else {
+        "Sorry, something went wrong."
+      }
+    })
+  })
+  
+  
+  
+  
+  
   
   output$prediction <- renderTable({
     prob <- predict(logistic_model, newdata = test_data(), type = "response")

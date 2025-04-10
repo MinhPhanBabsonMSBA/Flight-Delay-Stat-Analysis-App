@@ -2,13 +2,13 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
-library(reshape2)
-library(Rcpp)
-library(gbm)
-library(rsconnect)
+library(leaflet)
+library(shinythemes)
+library(shinyBS)
 
 # Define UI
 ui <- fluidPage(
+  theme = shinytheme("flatly"),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
@@ -16,25 +16,30 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      HTML("<h3>Welcome to the Flight Delay Analysis App</h3>"),
-      HTML("<p>This app provides insights into flight delays using various machine learning models.</p>"),
       selectInput("carrier", "Select Carrier:", choices = NULL),
-      selectInput("origin", "Select Origin:", choices = NULL),
-      selectInput("dest", "Select Destination:", choices = NULL),
-      sliderInput("dep_delay", label = "Departure Delay (minutes)", min = 0, max = 100, value = 0),
-      sliderInput("distance", label = "Distance (miles)", min = 0, max = 1000, value = 0),
-      downloadButton("downloadData", "Download Dataset")
+      selectInput("origin", "Select Origin Airport:", choices = NULL),
+      selectInput("dest", "Select Destination Airport:", choices = NULL),
+      numericInput("dep_delay", "Enter Departure Delay (minutes):", value = 0, min = -30, max = 300),
+      
+      bsTooltip("carrier", "Choose the airline carrier you want to simulate.", "right", options = list(container = "body")),
+      bsTooltip("origin", "Select the airport you're flying from.", "right", options = list(container = "body")),
+      bsTooltip("dest", "Select the airport you're flying to.", "right", options = list(container = "body")),
+      bsTooltip("dep_delay", "Enter a hypothetical departure delay in minutes.", "right", options = list(container = "body")),
+      
+      textOutput("auto_distance"),
+      br()
     ),
     
     mainPanel(
-      # Add outputs for analysis and visualization
-      
-      
       tabsetPanel(
-        tabPanel("Visualizations",plotOutput("carrier_plot"),plotOutput("delay_plot"),plotOutput("scatter_plot"),plotOutput("barplot_dest")),
-        tabPanel("Logistic Model Prediction", tableOutput("prediction")),
-        tabPanel("Boost Ensemble Method Prediction ",tableOutput("prediction2")),
-        tabPanel("Stacked Emsemble Method using previous models", tableOutput("prediction3"))
+        tabPanel("Carrier Performance", plotOutput("carrier_plot", height = "500px")),
+        tabPanel("Destination Delays", plotOutput("barplot_dest", height = "500px")),
+        tabPanel("Top Delayed Routes", plotOutput("route_delay_plot", height = "600px")),
+        tabPanel("Route Map", leafletOutput("route_map", height = "700px")),
+        tabPanel("Will my flight be delayed ?",
+                 h4("Predicted Probability of Delay"),
+                 tableOutput("prediction")
+        )
       )
     )
   )
@@ -42,145 +47,144 @@ ui <- fluidPage(
 
 # Define Server Logic
 server <- function(input, output, session) {
-  # Load and preprocess the dataset
+  # Load data and model
   flight_data <- reactive({
-    flight <- read.csv("flights.csv")
-    flight
+    read.csv("flights.csv")
   })
   
+  logistic_model <- readRDS("logistic_model.rds")
+  
+  airports <- read.csv("https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat", header = FALSE)
+  airports <- airports[, c(5, 7, 8)]
+  colnames(airports) <- c("iata", "lat", "lon")
+  
+  route_data <- reactive({
+    req(input$origin, input$dest)
+    flight_data() %>%
+      filter(origin == input$origin, dest == input$dest) %>%
+      summarise(
+        avg_delay = mean(dep_delay, na.rm = TRUE),
+        flights = n(),
+        .groups = "drop"
+      ) %>%
+      mutate(origin = input$origin, dest = input$dest) %>%
+      left_join(airports, by = c("origin" = "iata")) %>%
+      rename(lat_orig = lat, lon_orig = lon) %>%
+      left_join(airports, by = c("dest" = "iata")) %>%
+      rename(lat_dest = lat, lon_dest = lon)
+  })
+  
+  test_data <- reactive({
+    req(input$origin, input$dest)
+    
+    dist <- flight_data() %>%
+      filter(origin == input$origin, dest == input$dest) %>%
+      distinct(distance) %>%
+      pull(distance)
+    
+    if (length(dist) == 0) dist <- NA
+    
+    data.frame(
+      carrier = input$carrier,
+      origin = input$origin,
+      dest = input$dest,
+      distance = dist[1],
+      dep_delay = input$dep_delay
+    )
+  })
   
   avg_delays_carrier <- reactive({
     flight_data() %>%
       group_by(carrier) %>%
-      summarise(mean_arr_delay = mean(arr_delay, na.rm = TRUE))
+      summarise(mean_arr_delay = mean(arr_delay, na.rm = TRUE), .groups = "drop")
   })
   
-  
-  
-  logistic_model <- readRDS("logistic_model.rds")  
-  boost_model <-readRDS("boost_model.rds")
-  stacked_model<-readRDS("stacked_model.rds")
-  
- 
-  
-  
-  
-  
-  # Populate the drop down menus dynamically
   observe({
     updateSelectInput(session, "carrier", choices = unique(flight_data()$carrier))
     updateSelectInput(session, "origin", choices = unique(flight_data()$origin))
     updateSelectInput(session, "dest", choices = unique(flight_data()$dest))
-    
-    # Update slider inputs with actual data ranges
-    updateSliderInput(session, "dep_delay", min = min(flight_data()$dep_delay, na.rm = TRUE), max = max(flight_data()$dep_delay, na.rm = TRUE), value = 0)
-    updateSliderInput(session, "distance", min = min(flight_data()$distance, na.rm = TRUE), max = max(flight_data()$distance, na.rm = TRUE), value = 0)
   })
   
-  # Predictions
+  observeEvent(input$origin, {
+    valid_dests <- flight_data() %>%
+      filter(origin == input$origin) %>%
+      distinct(dest) %>%
+      pull(dest)
+    updateSelectInput(session, "dest", choices = valid_dests)
+  })
   
-  #Logistic Model
   output$prediction <- renderTable({
-    test_data <- data.frame(
-      carrier = input$carrier,
-      origin = input$origin,
-      dest = input$dest,
-      distance = input$distance,
-      dep_delay = input$dep_delay
-    )
-    
-    test_data$prob_delay_yes <- predict(logistic_model, newdata = test_data, type = "response")
-    test_data
-
+    prob <- predict(logistic_model, newdata = test_data(), type = "response")
+    percent <- round(prob * 100, 1)
+    data.frame(`Predicted Probability of Delay` = paste0(percent, "%"))
   })
   
-  #Boost
-  output$prediction2 <- renderTable({
-    test_data <- data.frame(
-      carrier = input$carrier,
-      origin = input$origin,
-      dest = input$dest,
-      distance = input$distance,
-      dep_delay = input$dep_delay
-    )
-    
-    test_data$prob_delay_yes <- predict(boost_model, newdata = test_data, type = "response")
-    test_data
-  })
-  
-  
-  #Stacked
-  output$prediction3 <- renderTable({
-    test_data <- data.frame(
-      carrier = input$carrier,
-      origin = input$origin,
-      dest = input$dest,
-      distance = input$distance,
-      dep_delay = input$dep_delay
-    )
-    
-    test_data$prob_delay_yes <- predict(stacked_model, newdata = test_data, type = "response")
-    test_data
-    
-  })
-  
-  
-# Visualizations  
-
-  # Departure Delay distribution plot
-  output$delay_plot <- renderPlot({
-    ggplot(flight_data(), aes(x = dep_delay)) +
-      geom_histogram(binwidth = 10, fill = "blue", color = "black", alpha = 0.7) +
-      scale_x_continuous(limits = c(-20, 80), breaks = seq(-20, 80, 5)) +
-      labs(title= " Distribution of Departure Delay Variable", x = "Departure Delay (minutes)", y = "Frequency") +
-      theme(plot.title = element_text(hjust = 0.5))
-  })
-
-  
-  # Carrier Delay plot
-
+  # Visualizations
   output$carrier_plot <- renderPlot({
     ggplot(avg_delays_carrier(), aes(x = carrier, y = mean_arr_delay)) +
-      geom_col(fill = "grey") +
+      geom_col(fill = "steelblue") +
       scale_y_continuous(limits = c(-10, 5), breaks = seq(-10, 5, 5)) +
-      labs(title = "Average Arrival Delays by Carrier", 
-           x = "Carrier", 
-           y = "Average Arrival Delay (minutes)") +
+      labs(title = "Average Arrival Delays by Carrier", x = "Carrier", y = "Average Arrival Delay (minutes)") +
+      theme_minimal(base_size = 14) +
       theme(plot.title = element_text(hjust = 0.5)) +
       coord_flip()
-    
-  })
-  # Scatter Plot of Distance vs departure Delay 
-  output$scatter_plot <- renderPlot({
-    ggplot(flight_data(), aes(x = distance, y = dep_delay)) +
-      geom_point(alpha = 0.5) +
-      labs(title = "Scatter Plot of Departure Delay vs. Distance", x = "Distance (miles)", y = "Departure Delay (minutes)") +
-      theme(plot.title = element_text(hjust = 0.5))
   })
   
-  # Bar Plot of Delays by Destination 
   output$barplot_dest <- renderPlot({
     flight_data() %>%
       group_by(dest) %>%
-      summarise(mean_delay = mean(dep_delay, na.rm = TRUE)) %>%
+      summarise(mean_delay = mean(dep_delay, na.rm = TRUE), .groups = "drop") %>%
       top_n(10, mean_delay) %>%
       ggplot(aes(x = reorder(dest, mean_delay), y = mean_delay)) +
-      geom_bar(stat = "identity") +
+      geom_bar(stat = "identity", fill = "darkorange") +
       coord_flip() +
-      labs(title = "Top 10 Destinations with Highest Average Departure Delays", x = "Destination", y = "Average Departure Delay (minutes)") + theme(plot.title = element_text(hjust = 0.5))
-
+      labs(title = "Top 10 Destinations with Highest Average Departure Delays", x = "Destination", y = "Average Departure Delay (minutes)") +
+      theme_minimal(base_size = 14) +
+      theme(plot.title = element_text(hjust = 0.5))
   })
   
-  # Download Data
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      paste("flight_data-", Sys.Date(), ".csv", sep="")
-    },
-    content = function(file) {
-      write.csv(flight_data(), file)
+  output$route_delay_plot <- renderPlot({
+    flight_data() %>%
+      group_by(origin, dest) %>%
+      summarise(avg_delay = mean(dep_delay, na.rm = TRUE), flight_count = n(), .groups = "drop") %>%
+      filter(flight_count > 50) %>%
+      top_n(10, avg_delay) %>%
+      ggplot(aes(x = reorder(paste(origin, "→", dest), avg_delay), y = avg_delay)) +
+      geom_bar(stat = "identity", fill = "orange") +
+      coord_flip() +
+      labs(title = "Top 10 Routes with Highest Average Departure Delay", x = "Route", y = "Average Departure Delay (minutes)") +
+      theme_minimal(base_size = 15) +
+      theme(plot.title = element_text(hjust = 0.5))
+  })
+  
+  output$route_map <- renderLeaflet({
+    leaflet(route_data()) %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addPolylines(
+        lng = ~c(lon_orig, lon_dest),
+        lat = ~c(lat_orig, lat_dest),
+        label = ~paste(origin, "→", dest, " - Avg Delay: ", round(avg_delay, 1), "min"),
+        color = "red",
+        weight = ~sqrt(avg_delay),
+        opacity = 0.7
+      )
+  })
+  
+  output$auto_distance <- renderText({
+    req(input$origin, input$dest)
+    
+    dist <- flight_data() %>%
+      filter(origin == input$origin, dest == input$dest) %>%
+      distinct(distance) %>%
+      pull(distance)
+    
+    if (length(dist) == 0) {
+      return("No distance found for this origin-destination pair.")
     }
-  )
-  }
+    
+    paste("Distance between selected airports:", round(dist[1], 1), "miles")
+  })
+}
 
 # Run the App
 shinyApp(ui = ui, server = server)

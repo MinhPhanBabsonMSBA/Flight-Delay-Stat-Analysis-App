@@ -1,86 +1,125 @@
-# **Flight Delay Analysis App**
+# ✈️ Flight Delay Analysis App
 
-## **A. Introduction**
+## 🧭 A. Introduction
 
-Welcome to the **Flight Delay Analysis App**! This project was inspired by a personal experience during the New Year’s holiday when a flight delay at JFK Airport sparked curiosity about the causes and patterns of flight delay ([LinkedIn Post](https://www.linkedin.com/posts/minh-phan-0409_it-is-the-new-years-holiday-one-of-the-activity-7280805963832410112-8Cs3?utm_source=share&utm_medium=member_desktop)). Leveraging machine learning and interactive data visualization, this app helps users explore real-world flight delay data and gain insights into factors contributing to delays. 
- 
- **Explore the Project**
-- **R Shiny App**: [Flight Delay Analysis App](http://jj1tt9minh0phan.shinyapps.io/FlightDelayApp)
-- **Quarto Document**: [GitHub Repository](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App)
+Welcome to the **Flight Delay Analysis App** — a project born from a New Year’s holiday travel delay at JFK Airport ([LinkedIn Post](https://www.linkedin.com/posts/minh-phan-0409_it-is-the-new-years-holiday-one-of-the-activity-7280805963832410112-8Cs3?utm_source=share&utm_medium=member_desktop)). This interactive R Shiny application helps you visualize, explore, and simulate real-world flight delay scenarios using historical flight data and predictive modeling.
 
-## **B. Business Questions**
-Several key questions drive this analysis:
-1. **Carrier Performance**: Which airlines are more likely to experience delays?
-2. **Distance Impact**: How does the distance between origin and destination airports influence delays?
-3. **Departure Time Analysis**: What’s the relationship between the time of day and the probability of delays?
-4. **Destination Trends**: Which destinations have the highest average delays, and why?
-5. **Predictive Modeling**: Can flight delays be accurately predicted based on factors such as carrier, distance, and departure delays?
+🎯 **Live App**: [Flight Delay App on ShinyApps.io](http://jj1tt9minh0phan.shinyapps.io/FlightDelayApp)  
+📂 **Code & Documentation**: [GitHub Repository](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App)
 
-## **C. Project Objectives**
-The primary objectives of this project are:
-1. To build a user-friendly R Shiny app for visualizing and predicting flight delays.
-2. To develop machine learning models (logistic regression, boosting, stacked ensembles) for predicting delays.
-3. To identify and analyze key factors influencing delays across major airports in the US.
-4. To provide actionable insights for travelers and aviation stakeholders.
+---
 
-## **D. Data and Methodology**
-### **1. Data**
-- **Dataset**: Real-world flight data focusing on three major origin airports near New York City (JFK, Newark, and LaGuardia) and 59 destination airports across the US.
-- **Key Variables**:
-  - `carrier`: The airline operating the flight.
-  - `origin` and `dest`: The origin and destination airports.
-  - `dep_delay`: Departure delay in minutes.
-  - `distance`: Distance between origin and destination.
+## ❓ B. Business Questions
 
-### **2. Methodology**
-- **Exploratory Data Analysis (EDA)**: 
-  - Visualize delay patterns across carriers, destinations, and distances.
-  - Identify correlations between variables and delays.
-- **Machine Learning Models**:
-  - Logistic Regression for baseline predictions.
-  - Gradient Boosting to capture non-linear relationships.
-  - Stacked Ensemble to combine model strengths for better accuracy.
-- **Interactive App**:
-  - Built using **R Shiny** to allow users to explore data and predictions dynamically.
-  - Includes visualizations such as histograms, scatter plots, and bar plots.
+1. **Which airlines are more prone to delays?**  
+2. **Does flight distance influence delay likelihood?**  
+3. **Which destinations tend to have the worst delay patterns?**  
+4. **Can we predict the probability of a delay based on route, airline, and departure info?**
 
-## **E. Features**
-### **1. R Shiny App**
-- **Dynamic Visualizations**:
-  - Delay distributions by carrier and destination.
-  - Departure delay trends over time.
-  - Scatter plots of delay vs. distance.
-- **Predictive Analytics**:
-  - Logistic Regression: Predict delay probabilities based on key factors.
-  - Boosting Ensemble: Enhanced predictions with non-linear relationships.
-  - Stacked Ensemble: Combines model strengths for improved accuracy.
+---
+
+## 🎯 C. Project Objectives
+
+- Create an intuitive R Shiny dashboard for flight delay simulation and exploration.
+- Develop machine learning models to predict delay probabilities.
+- Offer real-time user interaction with origin-destination inputs.
+- Deliver valuable insights for both travelers and airline analysts.
+
+---
+
+## 📊 D. Data & Methodology
+
+### 1. ✈️ Data Source
+- **Flight Data**: Flights originating from NYC-area airports (JFK, LGA, EWR) to 59 destinations.
+- **Variables**:
+  - `carrier` – Airline code  
+  - `origin` / `dest` – Airport codes  
+  - `dep_delay` – Departure delay in minutes  
+  - `distance` – Distance in miles  
+
+### 2. 🔬 Methodology
+- **EDA**: Explore delay patterns across carriers and airports.
+- **ML Modeling**: Train and compare logistic regression, boosting, and stacked ensemble models.
+- **Visualization**: Use `ggplot2` and `leaflet` to generate interactive plots and maps.
+
+---
+
+## 🧩 E. Key Features
+
+### 🖥️ R Shiny Dashboard
+
 - **Interactive Inputs**:
   - Select carrier, origin, and destination.
-  - Adjust sliders for departure delays and distances.
-- **Data Download**:
-  - Users can download the dataset for their analysis.
+  - Simulate departure delays and auto-calculate distance.
+  
+- **Visual Analytics**:
+  - Delay distribution by carrier
+  - Top 10 destinations by average delay
+  - Route-level delay maps
+  - Carrier performance bar plots
 
-### **2. Supporting Quarto Document**
-- A detailed Quarto document provides insights into the logic and methods behind the app, including EDA, model evaluation, and feature engineering.
+- **Predictive Analytics**:
+  - Real-time probability prediction of a flight being delayed.
 
-## **F. Visual Highlights**
-### **Key Visualizations**:
-1. **Average Delays by Carrier**:
-   - Compare average arrival delays across airlines.
-2. **Top Destinations with Highest Delays**:
-   - Bar plot highlighting destinations with the most delays.
-3. **Scatter Plot of Departure Delay vs. Distance**:
-   - Understand the impact of distance on delays.
-4. **Real-Time Predictions**:
-   - Display probabilities of delays based on user-selected inputs.
+---
 
-## **G. Technologies Used**
-- **Programming Language**: R
-- **Libraries**: 
-  - `ggplot2`, `dplyr`, `reshape2` for data manipulation and visualization.
-  - `gbm`, `Rcpp` for machine learning models.
-- **Deployment**: R Shiny for app deployment and user interaction.
-- **Documentation**: Quarto for supporting analysis and methodology.
+## 🗺️ F. Visual Highlights
 
-## **H. Why This Project Matters**
-This project stemmed from a real-world frustration many travelers face: the unpredictability of flight delays. By combining data analysis and machine learning, this app provides insights into delay patterns and equips users with a tool to make more informed travel decisions.
+| Feature | Description |
+|--------|-------------|
+| 📈 **Carrier Bar Plot** | Visualize average delays by airline |
+| 🧭 **Route Delay Map** | See origin-destination delay flows |
+| 🧮 **Delay Probability Calculator** | Predict likelihood of delay for a flight |
+| 🛫 **Top Delayed Routes** | Explore routes with the most delay on average |
+
+---
+
+## 🤖 G. Machine Learning Component
+
+The machine learning module powers the **“Will My Flight Be Delayed?”** tab and offers real-time prediction.
+
+### ✅ Models Used
+
+| Model                | Description                                                                 |
+|---------------------|-----------------------------------------------------------------------------|
+| **Logistic Regression** | A fast, interpretable baseline classifier. Estimates probabilities of delay. |
+| **Gradient Boosting (GBM)** | Captures complex non-linear interactions among features.                 |
+| **Stacked Ensemble**     | Combines multiple models to boost predictive accuracy.                     |
+
+### 📐 Features Used for Prediction
+- `carrier` – Airline code  
+- `origin` – Departure airport  
+- `dest` – Arrival airport  
+- `distance` – Auto-filled based on origin/dest  
+- `dep_delay` – User-specified scenario value  
+
+> Predictions are updated immediately based on user inputs. The app automatically calculates the flight distance once an origin-destination pair is selected.
+
+---
+
+## 🛠️ H. Technologies Used
+
+- **Frontend**: R Shiny, `shinythemes`, `shinyBS`
+- **Backend**: `dplyr`, `ggplot2`, `leaflet`, `Rcpp`, `gbm`
+- **Machine Learning**: Logistic regression, gradient boosting, ensemble stacking
+- **Deployment**: [shinyapps.io](http://jj1tt9minh0phan.shinyapps.io/FlightDelayApp)
+- **Documentation**: Quarto for analysis and reporting
+
+---
+
+## 📌 I. Future Enhancements
+
+- 🔍 Add SHAP or LIME for model interpretability  
+- 🌤️ Integrate NOAA weather data to explain weather-related delays  
+- 🔄 Enable API-based real-time flight data updates (e.g., OpenSky, AviationStack)  
+- 💡 Add user-driven scenario simulations for multiple flights  
+
+---
+
+## 🙌 J. Why This Matters
+
+Flight delays are frustrating and costly. This app empowers users with data-driven insights to better anticipate and understand delay risks — turning uncertainty into informed decisions.
+
+---
+
+Feel free to fork, explore, or contribute!

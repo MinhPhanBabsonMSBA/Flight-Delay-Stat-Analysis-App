@@ -67,6 +67,10 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
 - **Predictive Analytics**:
   - Real-time probability prediction of a flight being delayed.
    ![](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App/blob/main/flight%20delay%205.png)
+  - AI Price Assistant
+  ![](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App/blob/main/flight%20delay%206.png)
+
+
 ---
 
 ## 🗺️ F. Visual Highlights
@@ -83,6 +87,7 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
 ## 🤖 G. Machine Learning Component
 
 The machine learning module powers the **“Will My Flight Be Delayed?”** tab and offers real-time prediction.
+The AI-powered assistant helps users see the desired flight price range from one destination to another.
 
 ### ✅ Models Used
 
@@ -92,6 +97,8 @@ The machine learning module powers the **“Will My Flight Be Delayed?”** tab 
 | **Gradient Boosting (GBM)** | Captures complex non-linear interactions among features.                 |
 | **Stacked Ensemble**     | Combines multiple models to boost predictive accuracy.                     |
 
+
+
 ### 📐 Features Used for Prediction
 - `carrier` – Airline code  
 - `origin` – Departure airport  
@@ -100,6 +107,11 @@ The machine learning module powers the **“Will My Flight Be Delayed?”** tab 
 - `dep_delay` – User-specified scenario value  
 
 > Predictions are updated immediately based on user inputs. The app automatically calculates the flight distance once an origin-destination pair is selected.
+
+
+### AI Assistant 
+- Using Groq API to fetch data and responses to answer users questions
+
 
 ---
 

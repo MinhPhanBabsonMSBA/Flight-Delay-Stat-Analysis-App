@@ -1,11 +1,11 @@
-# ✈️ Flight Delay Analysis App
+# Flight Delay Analysis App
 
-## 🧭 A. Introduction
+## A. Introduction
 
 Welcome to the **Flight Delay Analysis App** — a project born from a New Year’s holiday travel delay at JFK Airport ([LinkedIn Post](https://www.linkedin.com/posts/minh-phan-0409_it-is-the-new-years-holiday-one-of-the-activity-7280805963832410112-8Cs3?utm_source=share&utm_medium=member_desktop)). This interactive R Shiny application helps you visualize, explore, and simulate real-world flight delay scenarios using historical flight data and predictive modeling.
 
-🎯 **Live App**: [Flight Delay App on ShinyApps.io](http://jj1tt9minh0phan.shinyapps.io/FlightDelayApp)  
-📂 **Code & Documentation**: [GitHub Repository](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App)
+ **Live App**: [Flight Delay App on ShinyApps.io](http://jj1tt9minh0phan.shinyapps.io/FlightDelayApp)  
+ **Code & Documentation**: [GitHub Repository](https://github.com/MinhPhanBabsonMSBA/Flight-Delay-Stat-Analysis-App)
 
 ---
 
@@ -18,7 +18,7 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
 
 ---
 
-## 🎯 C. Project Objectives
+##  C. Project Objectives
 
 - Create an intuitive R Shiny dashboard for flight delay simulation and exploration.
 - Develop machine learning models to predict delay probabilities.
@@ -27,9 +27,9 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
 
 ---
 
-## 📊 D. Data & Methodology
+## D. Data & Methodology
 
-### 1. ✈️ Data Source
+### 1. Data Source
 - **Flight Data**: Flights originating from NYC-area airports (JFK, LGA, EWR) to 59 destinations.
 - **Variables**:
   - `carrier` – Airline code  
@@ -37,18 +37,18 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
   - `dep_delay` – Departure delay in minutes  
   - `distance` – Distance in miles  
 
-### 2. 🔬 Methodology
+### 2.  Methodology
 - **EDA**: Explore delay patterns across carriers and airports.
 - **ML Modeling**: Train and compare logistic regression, boosting, and stacked ensemble models.
 - **Visualization**: Use `ggplot2` and `leaflet` to generate interactive plots and maps.
 
 ---
 
-## 🧩 E. Key Features
+##  E. Key Features
 
 
 
-### 🖥️ R Shiny Dashboard
+###  R Shiny Dashboard
 
 - **Interactive Inputs**:
   - Select carrier, origin, and destination.
@@ -73,23 +73,23 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
 
 ---
 
-## 🗺️ F. Visual Highlights
+## F. Visual Highlights
 
 | Feature | Description |
 |--------|-------------|
-| 📈 **Carrier Bar Plot** | Visualize average delays by airline |
-| 🧭 **Route Delay Map** | See origin-destination delay flows |
-| 🧮 **Delay Probability Calculator** | Predict likelihood of delay for a flight |
-| 🛫 **Top Delayed Routes** | Explore routes with the most delay on average |
+|  **Carrier Bar Plot** | Visualize average delays by airline |
+|  **Route Delay Map** | See origin-destination delay flows |
+|  **Delay Probability Calculator** | Predict likelihood of delay for a flight |
+|  **Top Delayed Routes** | Explore routes with the most delay on average |
 
 ---
 
-## 🤖 G. Machine Learning Component
+##  G. Machine Learning Component
 
 The machine learning module powers the **“Will My Flight Be Delayed?”** tab and offers real-time prediction.
 The AI-powered assistant helps users see the desired flight price range from one destination to another.
 
-### ✅ Models Used
+### Models Used
 
 | Model                | Description                                                                 |
 |---------------------|-----------------------------------------------------------------------------|
@@ -99,7 +99,7 @@ The AI-powered assistant helps users see the desired flight price range from one
 
 
 
-### 📐 Features Used for Prediction
+###  Features Used for Prediction
 - `carrier` – Airline code  
 - `origin` – Departure airport  
 - `dest` – Arrival airport  
@@ -125,16 +125,16 @@ The AI-powered assistant helps users see the desired flight price range from one
 
 ---
 
-## 📌 I. Future Enhancements
+##  I. Future Enhancements
 
-- 🔍 Add SHAP or LIME for model interpretability  
-- 🌤️ Integrate NOAA weather data to explain weather-related delays  
-- 🔄 Enable API-based real-time flight data updates (e.g., OpenSky, AviationStack)  
-- 💡 Add user-driven scenario simulations for multiple flights  
+-  Add SHAP or LIME for model interpretability  
+-  Integrate NOAA weather data to explain weather-related delays  
+-  Enable API-based real-time flight data updates (e.g., OpenSky, AviationStack)  
+-  Add user-driven scenario simulations for multiple flights  
 
 ---
 
-## 🙌 J. Why This Matters
+## J. Why This Matters
 
 Flight delays are frustrating and costly. This app empowers users with data-driven insights to better anticipate and understand delay risks — turning uncertainty into informed decisions.
 

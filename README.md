@@ -9,7 +9,7 @@ Welcome to the **Flight Delay Analysis App** — a project born from a New Year�
 
 ---
 
-## ❓ B. Business Questions
+##  B. Business Questions
 
 1. **Which airlines are more prone to delays?**  
 2. **Does flight distance influence delay likelihood?**  
@@ -115,7 +115,7 @@ The AI-powered assistant helps users see the desired flight price range from one
 
 ---
 
-## 🛠️ H. Technologies Used
+##  H. Technologies Used
 
 - **Frontend**: R Shiny, `shinythemes`, `shinyBS`
 - **Backend**: `dplyr`, `ggplot2`, `leaflet`, `Rcpp`, `gbm`
